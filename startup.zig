@@ -38,7 +38,7 @@ extern fn DebugMon_Handler() void;
 extern fn PendSV_Handler() void;
 extern fn SysTick_Handler() void;
 
-const Isr = extern fn () void;
+const Isr = fn () callconv(.C) void;
 
 export var vector_table linksection(".isr_vector") = [_]?Isr{
     Reset_Handler,
