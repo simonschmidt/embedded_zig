@@ -3,7 +3,7 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
 BUILD_FLAGS = -O ReleaseSmall -target thumb-freestanding -mcpu cortex_m3
-LINKER_SCRIPT = arm_cm3.ld
+LINKER_SCRIPT = STM32F103C8Tx_FLASH.ld
 LD_FLAGS = --gc-sections -nostdlib
 OBJS = startup.o main.o
 PROG = firmware
