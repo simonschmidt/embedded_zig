@@ -1,13 +1,19 @@
 usingnamespace @import("stm32f10.zig");
+const mcu = @import("stm32f103.zig");
 
 export fn main() void {
     SystemInit();
-    RCC.*.APB2ENR |= RCC_APB2Periph_GPIOC; // enable GPIOC clk
-    GPIOC.*.CRH &= ~@as(u32, 0b1111 << 20); // PC13
-    GPIOC.*.CRH |= @as(u32, 0b0010 << 20); // Out PP, 2MHz
+    mcu.rcc.apb2enr.modify(.{ .iopcen = 1 });
 
+    mcu.gpioc.crh.modify_mask(.{
+        .cnf13 = 0b00,
+        .mode13 = 0b10,
+    });
+
+    var x: u1 = mcu.gpioc.odr.read_bit("odr13");
     while (true) {
-        GPIOC.*.ODR ^= GPIO_PIN_13; // toggle
+        mcu.gpioc.odr.write_bit("odr13", x);
+        x = ~x;
         var i: u32 = 0;
         while (i < 1000000) {
             asm volatile ("nop");
