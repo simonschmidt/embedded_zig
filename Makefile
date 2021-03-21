@@ -14,7 +14,8 @@ PROG = firmware
 ${PROG}: ${OBJS}
 	zig build-exe ${BUILD_FLAGS} $(OBJS:%=%) --name $@.elf --script ${LINKER_SCRIPT}
 #	arm-none-eabi-ld ${OBJS} -o $@.elf -T ${LINKER_SCRIPT} -Map $@.map ${LD_FLAGS}
-
+	arm-none-eabi-objcopy -O binary firmware.elf firmware.bin
+	arm-none-eabi-objdump -d firmware.elf -l -S > firmware.lst
 clean:
 	rm -rf ${PROG}.* ${OBJS} $(OBJS:%.o=%.h) zig-cache
 
