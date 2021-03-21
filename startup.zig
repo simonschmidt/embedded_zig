@@ -1,23 +1,32 @@
 const builtin = @import("builtin");
 
 extern fn main() void;
-extern var __text_end: u32;
-extern var __data_start: u32;
-extern var __data_size: u32;
-extern var __bss_start: u32;
-extern var __bss_size: u32;
-extern var __stack_top: u32;
+
+extern const _sidata: u32;
+extern const _sdata: u32;
+extern const _edata: u32;
+extern const _sbss: u32;
+extern const _ebss: u32;
 
 export fn Reset_Handler() void {
     // copy data from flash to RAM
-    const data_size = @ptrToInt(&__data_size);
-    const data = @ptrCast([*]u8, &__data_start);
-    const text_end = @ptrCast([*]u8, &__text_end);
-    for (text_end[0..data_size]) |b, i| data[i] = b;
-    // clear the bss
-    const bss_size = @ptrToInt(&__bss_size);
-    const bss = @ptrCast([*]u8, &__bss_start);
-    for (bss[0..bss_size]) |*b| b.* = 0;
+
+    var data_read_ptr = _sidata;
+    var data_write_ptr = _sdata;
+
+    while (data_write_ptr != _edata) {
+        @intToPtr(*u32, data_write_ptr).* = @intToPtr(*u32, data_read_ptr).*;
+        data_read_ptr += 4;
+        data_write_ptr += 4;
+
+    }
+
+    var bss_write_ptr = _sbss;
+
+    while (bss_write_ptr != _ebss) {
+        @intToPtr(*u32, bss_write_ptr).* = 0;
+    }
+
     // start
     main();
 }
@@ -38,7 +47,7 @@ extern fn DebugMon_Handler() void;
 extern fn PendSV_Handler() void;
 extern fn SysTick_Handler() void;
 
-const Isr = extern fn () void;
+const Isr = fn () callconv(.C) void;
 
 export var vector_table linksection(".isr_vector") = [_]?Isr{
     Reset_Handler,

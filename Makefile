@@ -2,8 +2,8 @@
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
-BUILD_FLAGS = --release-small -target thumbv7m-freestanding-none
-LINKER_SCRIPT = arm_cm3.ld
+BUILD_FLAGS = -O ReleaseSmall -target thumb-freestanding -mcpu cortex_m3
+LINKER_SCRIPT = STM32F103C8Tx_FLASH.ld
 LD_FLAGS = --gc-sections -nostdlib
 OBJS = startup.o main.o
 PROG = firmware
@@ -12,9 +12,10 @@ PROG = firmware
 	zig build-obj ${BUILD_FLAGS} $<
 
 ${PROG}: ${OBJS}
-	zig build-exe ${BUILD_FLAGS} $(OBJS:%=--object %) --name $@.elf --linker-script ${LINKER_SCRIPT}
+	zig build-exe ${BUILD_FLAGS} $(OBJS:%=%) --name $@.elf --script ${LINKER_SCRIPT}
 #	arm-none-eabi-ld ${OBJS} -o $@.elf -T ${LINKER_SCRIPT} -Map $@.map ${LD_FLAGS}
-
+	arm-none-eabi-objcopy -O binary firmware.elf firmware.bin
+	arm-none-eabi-objdump -d firmware.elf -l -S > firmware.lst
 clean:
 	rm -rf ${PROG}.* ${OBJS} $(OBJS:%.o=%.h) zig-cache
 
